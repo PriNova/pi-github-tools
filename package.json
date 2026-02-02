@@ -1,0 +1,53 @@
+{
+	"name": "@prinova/pi-github-tools",
+	"version": "1.0.0",
+	"description": "GitHub repository tools extension for pi-coding-agent",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"scripts": {
+		"clean": "rm -rf dist",
+		"build": "tsc",
+		"dev": "tsc --watch",
+		"prepublishOnly": "npm run clean && npm run build"
+	},
+	"pi": {
+		"extensions": ["./src/index.ts"]
+	},
+	"dependencies": {
+		"@mariozechner/pi-coding-agent": "^0.51.0",
+		"@mariozechner/pi-tui": "^0.51.0",
+		"@sinclair/typebox": "^0.34.41"
+	},
+	"peerDependencies": {
+		"@mariozechner/pi-coding-agent": ">=0.30.0"
+	},
+	"keywords": [
+		"pi-package",
+		"github",
+		"pi-extension",
+		"coding-agent",
+		"git",
+		"repository"
+	],
+	"author": "PriNova info@prinova.de",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/PriNova/pi-github-tools.git"
+	},
+	"bugs": {
+		"url": "https://github.com/PriNova/pi-github-tools/issues"
+	},
+	"homepage": "https://github.com/PriNova/pi-github-tools#readme",
+	"engines": {
+		"node": ">=20.0.0"
+	},
+	"overrides": {
+		"fast-xml-parser": "5.3.4"
+	},
+	"devDependencies": {
+		"@types/node": "^22.10.5",
+		"typescript": "^5.7.3"
+	}
+}
