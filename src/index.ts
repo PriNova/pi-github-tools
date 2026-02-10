@@ -2,13 +2,15 @@
  * GitHub Repository Tools Extension for pi-coding-agent
  *
  * Provides tools to read, search, and explore GitHub repositories.
- * Requires GITHUB_PAT environment variable for API access.
+ * Requires GITHUB_PAT environment variable or GITHUB_PAT_FILE (path to token file) for API access.
  */
 
 import type { AgentToolResult, ExtensionAPI, ExtensionContext, Theme, ToolRenderResultOptions } from "@mariozechner/pi-coding-agent";
 import { keyHint, truncateToVisualLines } from "@mariozechner/pi-coding-agent";
 import { Container, Spacer, Text } from "@mariozechner/pi-tui";
 import { Type } from "@sinclair/typebox";
+import * as fs from "fs";
+import * as path from "path";
 
 // Common details type for all tools - must have consistent shape
 interface GitHubToolDetails {
@@ -59,21 +61,102 @@ interface GitHubSearchResponse {
 	incomplete_results: boolean;
 }
 
-// Get GitHub token from environment
-function getGitHubToken(): string | undefined {
-	return process.env.GITHUB_PAT;
+// Result type for token retrieval
+interface TokenResult {
+	token?: string;
+	error?: string;
+}
+
+// Cache for file-based tokens to avoid reading on every API call
+let cachedToken: { token: string; filePath: string } | null = null;
+
+// Maximum file size for token files (1KB is more than enough for a token)
+const MAX_TOKEN_FILE_SIZE = 1024;
+
+// Validate GitHub token format (basic check)
+function isValidTokenFormat(token: string): boolean {
+	// GitHub tokens typically start with ghp_, github_pat_, gho_, ghu_, ghs_, or ghr_
+	// and are at least 20 characters long
+	const validPrefixes = ["ghp_", "github_pat_", "gho_", "ghu_", "ghs_", "ghr_"];
+	const hasValidPrefix = validPrefixes.some((prefix) => token.startsWith(prefix));
+	return hasValidPrefix && token.length >= 20;
+}
+
+// Get GitHub token from environment or file
+// Supports GITHUB_PAT (env var) or GITHUB_PAT_FILE (path to file containing token)
+// This allows NixOS and containerized deployments to use secret files
+function getGitHubToken(): TokenResult {
+	// First check for direct env var (backward compatible)
+	if (process.env.GITHUB_PAT) {
+		const token = process.env.GITHUB_PAT.trim();
+		if (!token) {
+			return { error: "GITHUB_PAT environment variable is set but empty" };
+		}
+		if (!isValidTokenFormat(token)) {
+			return { error: "GITHUB_PAT appears to be invalid (should start with ghp_, github_pat_, etc.)" };
+		}
+		return { token };
+	}
+
+	// Then check for file path env var (for NixOS secrets, Docker secrets, etc.)
+	if (process.env.GITHUB_PAT_FILE) {
+		const filePath = path.resolve(process.env.GITHUB_PAT_FILE);
+
+		// Return cached token if file path hasn't changed
+		if (cachedToken && cachedToken.filePath === filePath) {
+			return { token: cachedToken.token };
+		}
+
+		try {
+			// Check file size before reading to prevent memory issues
+			const stats = fs.statSync(filePath);
+			if (stats.size > MAX_TOKEN_FILE_SIZE) {
+				return { error: `Token file at ${filePath} is too large (${stats.size} bytes, max ${MAX_TOKEN_FILE_SIZE})` };
+			}
+			if (stats.size === 0) {
+				return { error: `Token file at ${filePath} is empty` };
+			}
+
+			// Read and validate the token
+			const content = fs.readFileSync(filePath, "utf8");
+			const token = content.trim();
+
+			if (!token) {
+				return { error: `Token file at ${filePath} contains only whitespace` };
+			}
+			if (!isValidTokenFormat(token)) {
+				return { error: `Token in ${filePath} appears to be invalid (should start with ghp_, github_pat_, etc.)` };
+			}
+
+			// Cache the token for subsequent calls
+			cachedToken = { token, filePath };
+			return { token };
+		} catch (err) {
+			if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+				return { error: `Token file not found at ${filePath}` };
+			}
+			if ((err as NodeJS.ErrnoException).code === "EACCES") {
+				return { error: `Permission denied reading token file at ${filePath}. Ensure the file is readable by the current user.` };
+			}
+			const errorMessage = err instanceof Error ? err.message : String(err);
+			return { error: `Failed to read token file at ${filePath}: ${errorMessage}` };
+		}
+	}
+
+	return { error: "GitHub token not found. Set GITHUB_PAT environment variable or GITHUB_PAT_FILE (path to file containing token)" };
 }
 
 // Make authenticated request to GitHub API
 async function fetchFromGitHub<T>(path: string, options: { headers?: Record<string, string> } = {}): Promise<GitHubAPIResponse<T>> {
-	const token = getGitHubToken();
-	if (!token) {
+	const result = getGitHubToken();
+	if (!result.token) {
 		return {
 			ok: false,
 			status: 401,
-			statusText: "GITHUB_PAT environment variable not set",
+			statusText: result.error || "GitHub token not found",
 		};
 	}
+	const token = result.token;
 
 	const url = `https://api.github.com/${path.replace(/^\//, "")}`;
 	const headers = {

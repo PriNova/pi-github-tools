@@ -16,13 +16,46 @@ npm install -g @prinova/pi-github-tools
 
 ## Setup
 
-This extension requires a GitHub Personal Access Token (PAT) to access the GitHub API. Set the `GITHUB_PAT` environment variable:
+This extension requires a GitHub Personal Access Token (PAT) to access the GitHub API. You can provide the token in two ways:
+
+### Option 1: Environment Variable (GITHUB_PAT)
 
 ```bash
 export GITHUB_PAT=ghp_your_token_here
 ```
 
-To create a token:
+### Option 2: File Path (GITHUB_PAT_FILE)
+
+For NixOS, Docker secrets, or other deployments where secrets are stored in files:
+
+```bash
+export GITHUB_PAT_FILE=/path/to/github_token.txt
+```
+
+The file should contain only the token (with optional trailing whitespace/newlines). This is useful for:
+- NixOS automatic deployments with `deployment.keys`
+- Docker secrets mounted as files
+- Kubernetes secrets
+- systemd credentials
+
+**Token File Example:**
+```bash
+# Create the token file (replace with your actual token)
+echo -n 'ghp_xxxxxxxxxxxxxxxxxxxx' > /etc/secrets/github_token
+chmod 600 /etc/secrets/github_token
+
+# Set the environment variable
+export GITHUB_PAT_FILE=/etc/secrets/github_token
+```
+
+**Security Notes:**
+- The token file must be readable by the user running pi
+- File size is limited to 1KB (tokens are typically ~40-100 bytes)
+- Tokens are validated to ensure they start with valid GitHub prefixes (`ghp_`, `github_pat_`, etc.)
+- The token is cached in memory after first read for performance
+
+### Creating a GitHub Token
+
 1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
 2. Click "Generate new token (classic)"
 3. Select the `repo` scope for full repository access, or `public_repo` for public repositories only
