@@ -1,6 +1,6 @@
 {
 	"name": "@prinova/pi-github-tools",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "GitHub repository tools extension for pi-coding-agent",
 	"type": "module",
 	"main": "./dist/index.js",
