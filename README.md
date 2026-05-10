@@ -1,6 +1,6 @@
 # @prinova/pi-github-tools
 
-GitHub repository tools extension for [pi-coding-agent](https://www.npmjs.com/package/@mariozechner/pi-coding-agent). Provides tools to read, search, and explore GitHub repositories directly from pi.
+GitHub repository tools extension for [pi-coding-agent](https://www.npmjs.com/package/@earendil-works/pi-coding-agent). Provides tools to read, search, and explore GitHub repositories directly from pi.
 
 ## Installation
 

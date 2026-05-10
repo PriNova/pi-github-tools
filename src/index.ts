@@ -5,9 +5,9 @@
  * Requires GITHUB_PAT environment variable or GITHUB_PAT_FILE (path to token file) for API access.
  */
 
-import type { AgentToolResult, ExtensionAPI, ExtensionContext, Theme, ToolRenderResultOptions } from "@mariozechner/pi-coding-agent";
-import { keyHint, truncateToVisualLines } from "@mariozechner/pi-coding-agent";
-import { Container, Spacer, Text } from "@mariozechner/pi-tui";
+import type { AgentToolResult, ExtensionAPI, ExtensionContext, Theme, ToolRenderResultOptions } from "@earendil-works/pi-coding-agent";
+import { keyHint, truncateToVisualLines } from "@earendil-works/pi-coding-agent";
+import { Container, Spacer, Text } from "@earendil-works/pi-tui";
 import { Type } from "@sinclair/typebox";
 import * as fs from "fs";
 import * as path from "path";
@@ -367,7 +367,7 @@ Read specific lines:
 				container.addChild(new Spacer(1));
 				container.addChild(
 					new Text(
-						theme.fg("muted", `... (${skippedCount} more lines,`) + ` ${keyHint("expandTools", "to expand")})`,
+						theme.fg("muted", `... (${skippedCount} more lines,`) + ` ${keyHint("app.tools.expand", "to expand")})`,
 						0,
 						0,
 					),
@@ -469,7 +469,7 @@ List src directory:
 					container.addChild(new Spacer(1));
 					container.addChild(
 						new Text(
-							theme.fg("muted", `... (${skippedCount} more items,`) + ` ${keyHint("expandTools", "to expand")})`,
+							theme.fg("muted", `... (${skippedCount} more items,`) + ` ${keyHint("app.tools.expand", "to expand")})`,
 							0,
 							0,
 						),
@@ -613,7 +613,7 @@ Search in specific directory:
 				container.addChild(new Spacer(1));
 				container.addChild(
 					new Text(
-						theme.fg("muted", `... (${skippedCount} more lines,`) + ` ${keyHint("expandTools", "to expand")})`,
+						theme.fg("muted", `... (${skippedCount} more lines,`) + ` ${keyHint("app.tools.expand", "to expand")})`,
 						0,
 						0,
 					),
@@ -721,7 +721,7 @@ Find markdown files with pagination:
 				container.addChild(new Spacer(1));
 				container.addChild(
 					new Text(
-						theme.fg("muted", `... (${skippedCount} more files,`) + ` ${keyHint("expandTools", "to expand")})`,
+						theme.fg("muted", `... (${skippedCount} more files,`) + ` ${keyHint("app.tools.expand", "to expand")})`,
 						0,
 						0,
 					),
@@ -850,7 +850,7 @@ Find TypeScript projects:
 				container.addChild(new Spacer(1));
 				container.addChild(
 					new Text(
-						theme.fg("muted", `... (${skippedCount} more repos,`) + ` ${keyHint("expandTools", "to expand")})`,
+						theme.fg("muted", `... (${skippedCount} more repos,`) + ` ${keyHint("app.tools.expand", "to expand")})`,
 						0,
 						0,
 					),
@@ -984,7 +984,7 @@ Combined search:
 				container.addChild(new Spacer(1));
 				container.addChild(
 					new Text(
-						theme.fg("muted", `... (${skippedCount} more commits,`) + ` ${keyHint("expandTools", "to expand")})`,
+						theme.fg("muted", `... (${skippedCount} more commits,`) + ` ${keyHint("app.tools.expand", "to expand")})`,
 						0,
 						0,
 					),
